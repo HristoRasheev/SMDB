@@ -4,8 +4,6 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMDB", "SMDB.csproj", "{3F6970D1-2ED4-68D1-A97E-8C39B3326781}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMDB_GUI", "..\SMDB_GUI\SMDB_GUI.csproj", "{15B31259-FD7E-431D-A73E-EF2906DE0C78}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
