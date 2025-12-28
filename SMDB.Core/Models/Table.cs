@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SMDB.Models
+namespace SMDB.Core.Models
 {
     public struct Column
     {
         public string Name;
         public string Type;
-        public int Size;           // само за STRING(M)
+        public int Size;
         public string DefaultValue;
     }
 
@@ -29,8 +29,6 @@ namespace SMDB.Models
             Name = name;
         }
 
-        // -------------------- Paths --------------------
-
         private string GetStorageDir()
         {
             string dir = Path.Combine(AppContext.BaseDirectory, "Storage");
@@ -47,9 +45,6 @@ namespace SMDB.Models
         {
             return Path.Combine(GetStorageDir(), Name + ".tbl");
         }
-
-
-        // -------------------- Small helpers --------------------
 
         private bool StringsAreEqual(string a, string b)
         {
@@ -141,7 +136,6 @@ namespace SMDB.Models
             return sign * value;
         }
 
-        // dd.MM.yyyy -> yyyyMMdd
         private int ParseDateToInt(string s)
         {
             if (s == null) return -1;
@@ -206,7 +200,6 @@ namespace SMDB.Models
                 freeCount = 0;
                 freeSlots = new int[0];
 
-                // free list
                 if (r.BaseStream.Position < r.BaseStream.Length)
                 {
                     freeCount = r.ReadInt32();
@@ -218,7 +211,6 @@ namespace SMDB.Models
                     }
                 }
 
-                // checksum (ако го има)
                 checksum = 0;
                 if (r.BaseStream.Position < r.BaseStream.Length)
                     checksum = r.ReadInt32();
@@ -255,7 +247,7 @@ namespace SMDB.Models
             string tableFile = GetDataPath();
             using (BinaryReader r = new BinaryReader(File.Open(tableFile, FileMode.Open, FileAccess.Read)))
             {
-                r.ReadString(); // table name header
+                r.ReadString();
                 return r.BaseStream.Position;
             }
         }
@@ -652,7 +644,6 @@ namespace SMDB.Models
                     long offset = dataStart + (long)(row - 1) * rowSize;
                     w.BaseStream.Seek(offset, SeekOrigin.Begin);
 
-                    // write zeros for rowSize bytes
                     for (int b = 0; b < rowSize; b++)
                         w.Write((byte)0);
                 }
@@ -720,11 +711,43 @@ namespace SMDB.Models
             return res;
         }
 
+        private void ReadIndex(string idxFile, out int[] keys, out int[] rows)
+        {
+            using (BinaryReader r = new BinaryReader(File.Open(idxFile, FileMode.Open)))
+            {
+                r.ReadString(); // table name
+                r.ReadString(); // column name
+                int n = r.ReadInt32();
+
+                keys = new int[n];
+                rows = new int[n];
+
+                for (int i = 0; i < n; i++)
+                {
+                    keys[i] = r.ReadInt32();
+                    rows[i] = r.ReadInt32();
+                }
+            }
+        }
+
+        private int BinarySearch(int[] keys, int value)
+        {
+            int l = 0, r = keys.Length - 1;
+            while (l <= r)
+            {
+                int m = (l + r) / 2;
+                if (keys[m] == value) return m;
+                if (keys[m] < value) l = m + 1;
+                else r = m - 1;
+            }
+            return -1;
+        }
         public void Select(
             string[] selectedCols,
             SimpleCond[] conds, string[] links, int condCount,
             bool distinct, bool hasOrder, string orderCol, bool orderAsc)
         {
+
             string tableFile = GetDataPath();
             string metaFile = GetMetaPath();
 
@@ -734,9 +757,44 @@ namespace SMDB.Models
                 return;
             }
 
-            ReadMeta(out int rowCount, out Column[] columns, out int freeCount, out int[] freeSlots, out _);
+            ReadMeta(out int rowCount, out Column[] columns,
+         out int freeCount, out int[] freeSlots, out _);
 
-            // SELECT *
+            //при наличие на индекс
+            if (condCount == 1 &&
+                conds[0].Op == "=" &&
+                !conds[0].Not)
+            {
+                int colIdx = FindColumnIndex(columns, conds[0].Col);
+                if (colIdx != -1 &&
+                    (columns[colIdx].Type == "INT" ||
+                     columns[colIdx].Type == "DATE"))
+                {
+                    string idxFile = Path.Combine(
+                        GetStorageDir(),
+                        $"{Name}_{conds[0].Col}.idx"
+                    );
+
+                    if (File.Exists(idxFile))
+                    {
+                        int value;
+                        if (columns[colIdx].Type == "INT")
+                            value = ParseIntOrError(conds[0].ValStr);
+                        else // DATE
+                            value = ParseDateToInt(conds[0].ValStr);
+
+                        ReadIndex(idxFile, out int[] keys, out int[] rows);
+                        int pos = BinarySearch(keys, value);
+
+                        if (pos != -1)
+                        {
+                            GetRows(new int[] { rows[pos] });
+                        }
+                        return;
+                    }
+                }
+            }
+
             if (selectedCols.Length == 1 && selectedCols[0] == "*")
             {
                 selectedCols = new string[columns.Length];
@@ -755,7 +813,6 @@ namespace SMDB.Models
                 }
             }
 
-            // ORDER BY
             int orderColIndex = -1;
             if (hasOrder)
             {
@@ -799,7 +856,6 @@ namespace SMDB.Models
                     long offset = dataStart + (long)(row - 1) * rowSize;
                     r.BaseStream.Seek(offset, SeekOrigin.Begin);
 
-                    // read full row into arrays
                     int[] numericByColIndex = new int[columns.Length];
                     string[] stringByColIndex = new string[columns.Length];
 
@@ -840,7 +896,6 @@ namespace SMDB.Models
 
             if (!mustCollect) return;
 
-            // DISTINCT
             if (distinct)
             {
                 List<string[]> uniq = new List<string[]>();
@@ -875,7 +930,6 @@ namespace SMDB.Models
                 if (hasOrder) orderKeys = uniqKeys;
             }
 
-            // ORDER BY keys bubble
             if (hasOrder)
             {
                 for (int i = 0; i < outRows.Count - 1; i++)
@@ -923,7 +977,7 @@ namespace SMDB.Models
                 return;
             }
 
-            string idxFile = Path.Combine(GetStorageDir(), $"{indexName}.idx");
+            string idxFile = Path.Combine(GetStorageDir(), $"{Name}_{columnName}.idx");
 
             int rowSize = GetRowSize(columns);
             long dataStart = GetDataStart();
@@ -954,7 +1008,6 @@ namespace SMDB.Models
                         }
                         else if (t == "STRING")
                         {
-                            // skip bytes
                             for (int b = 0; b < columns[c].Size; b++) r.ReadByte();
                         }
                     }
@@ -988,8 +1041,6 @@ namespace SMDB.Models
             Console.WriteLine($"Index '{indexName}' created.");
         }
 
-        // -------------------- checksum --------------------
-
         private int CalcDataChecksum(string path, long startOffset)
         {
             int sum = 0;
@@ -1004,11 +1055,6 @@ namespace SMDB.Models
             }
 
             return sum;
-        }
-
-        private string GetIndexPath(string indexName)
-        {
-            return Path.Combine(GetStorageDir(), indexName + ".idx");
         }
 
         public static void DropIndex(string indexName)
@@ -1027,7 +1073,6 @@ namespace SMDB.Models
             File.Delete(idxFile);
             Console.WriteLine($"Index '{indexName}' dropped.");
         }
-
 
         public string CheckIntegrity()
         {

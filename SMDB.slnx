@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SMDB.Avalonia/SMDB.Avalonia.csproj" />
+  <Project Path="SMDB.Core/SMDB.Core.csproj" />
+</Solution>
