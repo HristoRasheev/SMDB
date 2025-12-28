@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using SMDB.Models;
+using SMDB.Core.Models;
 
-namespace SMDB.Parsing
+namespace SMDB.Core.Parsing
 {
     public partial class Parser
     {

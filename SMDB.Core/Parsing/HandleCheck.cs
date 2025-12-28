@@ -1,23 +1,23 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using SMDB.Models;
+using SMDB.Core.Models;
 
-namespace SMDB.Parsing
+namespace SMDB.Core.Parsing
 {
     public partial class Parser
     {
-        private void HandleDrop(int pos, string query)
+        private void HandleCheck(int pos, string query)
         {
             (pos, string tableName) = ReadWord(pos, query);
-
             if (tableName == "")
             {
-                Console.WriteLine("Name not specified.");
+                Console.WriteLine("Missing table name.");
                 return;
             }
 
             var table = new Table(tableName);
-            table.Drop();
+            Console.WriteLine(table.CheckIntegrity());
         }
+
     }
 }

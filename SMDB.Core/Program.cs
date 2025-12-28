@@ -1,5 +1,5 @@
-﻿using SMDB.Models;
-using SMDB.Parsing;
+﻿using SMDB.Core.Models;
+using SMDB.Core.Parsing;
 
 namespace SMDB
 {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SMDB.Models
+namespace SMDB.Core.Models
 {
     public struct Column
     {
@@ -29,7 +29,6 @@ namespace SMDB.Models
             Name = name;
         }
 
-        // -------------------- Paths --------------------
         private string GetStorageDir()
         {
             string dir = Path.Combine(AppContext.BaseDirectory, "Storage");
@@ -46,9 +45,6 @@ namespace SMDB.Models
         {
             return Path.Combine(GetStorageDir(), Name + ".tbl");
         }
-
-
-        // -------------------- Small helpers --------------------
 
         private bool StringsAreEqual(string a, string b)
         {
@@ -204,7 +200,6 @@ namespace SMDB.Models
                 freeCount = 0;
                 freeSlots = new int[0];
 
-                // free list
                 if (r.BaseStream.Position < r.BaseStream.Length)
                 {
                     freeCount = r.ReadInt32();
@@ -216,7 +211,6 @@ namespace SMDB.Models
                     }
                 }
 
-                // checksum (ако го има)
                 checksum = 0;
                 if (r.BaseStream.Position < r.BaseStream.Length)
                     checksum = r.ReadInt32();
@@ -253,7 +247,7 @@ namespace SMDB.Models
             string tableFile = GetDataPath();
             using (BinaryReader r = new BinaryReader(File.Open(tableFile, FileMode.Open, FileAccess.Read)))
             {
-                r.ReadString(); // table name header
+                r.ReadString();
                 return r.BaseStream.Position;
             }
         }
@@ -650,7 +644,6 @@ namespace SMDB.Models
                     long offset = dataStart + (long)(row - 1) * rowSize;
                     w.BaseStream.Seek(offset, SeekOrigin.Begin);
 
-                    // write zeros for rowSize bytes
                     for (int b = 0; b < rowSize; b++)
                         w.Write((byte)0);
                 }
@@ -802,7 +795,6 @@ namespace SMDB.Models
                 }
             }
 
-            // SELECT *
             if (selectedCols.Length == 1 && selectedCols[0] == "*")
             {
                 selectedCols = new string[columns.Length];
