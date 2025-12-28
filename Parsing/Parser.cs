@@ -141,7 +141,6 @@ namespace SMDB.Parsing
                 pos++;
             }
 
-
             // НЕ пипаме запетаята тук – оставяме я да я види външният код
             return (pos, word);
         }
@@ -177,13 +176,11 @@ namespace SMDB.Parsing
             else
             {
                 string val = "";
-
                 while (pos < end && !char.IsWhiteSpace(text[pos]) && text[pos] != ',')
                 {
                     val += text[pos];
                     pos++;
                 }
-
                 return (pos, val);
             }
         }

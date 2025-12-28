@@ -14,7 +14,6 @@ namespace SMDB.Parsing
                 Console.WriteLine("Missing index name.");
                 return;
             }
-
             Table.DropIndex(indexName);
         }
     }
