@@ -2,8 +2,103 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:dg="using:Avalonia.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="SMDB.Avalonia.MainWindow"
+        Background="#F0F0F0"
         Title="SMDB.Avalonia">
-    Welcome to Avalonia!
+
+        <Grid Margin="10"
+            ColumnDefinitions="220,*,300"
+            RowDefinitions="Auto,*">
+
+            <!-- STORAGE -->
+            <Border Grid.Row="0" Grid.Column="0"
+                Background="#DADADA"
+                BorderBrush="#B0B0B0"
+                BorderThickness="1"
+                Margin="5"
+                Padding="5">
+                <StackPanel>
+                    <TextBlock Text="Storage:" FontWeight="Bold" />
+                    <ListBox x:Name="TablesList"
+                        Height="180"
+                        Background="White" />
+                </StackPanel>
+            </Border>
+
+            <!-- TABLE INFO -->
+            <Border Grid.Row="1" Grid.Column="0"
+                Background="#DADADA"
+                BorderBrush="#B0B0B0"
+                BorderThickness="1"
+                Margin="5"
+                Padding="5">
+                <StackPanel>
+                    <TextBlock Text="Table Info:" FontWeight="Bold" />
+                    <TextBlock x:Name="TableInfoText"
+                        Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- ENTER QUERY -->
+            <Border Grid.Row="0" Grid.Column="1"
+                Background="#DADADA"
+                BorderBrush="#B0B0B0"
+                BorderThickness="1"
+                Margin="5"
+                Padding="5">
+                <StackPanel>
+                    <TextBlock Text="Enter Query:" FontWeight="Bold" />
+                    <TextBox x:Name="QueryBox"
+                        AcceptsReturn="True"
+                        Height="120"
+                        Background="White" />
+
+                    <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,5,0,0">
+                        <Button Content="CLEAR"
+                            Click="ClearQuery"
+                            Margin="5,0" />
+                        <Button Content="EXECUTE"
+                            Click="ExecuteQuery" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- OUTPUT -->
+            <Border Grid.Row="1" Grid.Column="1"
+                Background="#DADADA"
+                BorderBrush="#B0B0B0"
+                BorderThickness="1"
+                Margin="5"
+                Padding="5">
+                <StackPanel>
+                    <TextBlock Text="Output:" FontWeight="Bold" />
+                    <TextBox x:Name="OutputBox"
+                        AcceptsReturn="True"
+                        IsReadOnly="True"
+                        Height="260"
+                        Background="White" />
+                </StackPanel>
+            </Border>
+
+            <!-- TABLE INSIGHT -->
+            <Border Grid.Row="0" Grid.Column="2"
+                Grid.RowSpan="2"
+                Background="#DADADA"
+                BorderBrush="#B0B0B0"
+                BorderThickness="1"
+                Margin="5"
+                Padding="5">
+                <StackPanel>
+                    <TextBlock Text="Table Insight:" FontWeight="Bold" />
+                    <dg:DataGrid x:Name="TableGrid"
+                        AutoGenerateColumns="True"
+                        Background="White" />
+                </StackPanel>
+            </Border>
+
+        </Grid>
 </Window>

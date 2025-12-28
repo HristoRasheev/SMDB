@@ -1,10 +1,38 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="SMDB.Avalonia.App"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+<Application
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="SMDB.Avalonia.App">
 
     <Application.Styles>
         <FluentTheme />
+
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+
+        <Style Selector="TextBox:focus">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#0078D4" />
+        </Style>
+
+        <Style Selector="TextBox:selection">
+            <Setter Property="Background" Value="#CDE8FF" />
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
+
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="#CDE8FF" />
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
+
+        <Style Selector="DataGridRow:selected">
+            <Setter Property="Background" Value="#CDE8FF" />
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
     </Application.Styles>
 </Application>
