@@ -1,5 +1,4 @@
-<Application
-    xmlns="https://github.com/avaloniaui"
+<Application xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="SMDB.Avalonia.App">
 
@@ -7,22 +6,37 @@
         <FluentTheme />
 
         <Style Selector="TextBlock">
-            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="FontFamily"
+                Value="avares://SMDB.Avalonia/Assets/Fonts/JetBrainsMono-Regular.ttf#JetBrains Mono" />
+            <Setter Property="FontSize" Value="16" />
         </Style>
 
         <Style Selector="TextBox">
-            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="FontFamily"
+                Value="avares://SMDB.Avalonia/Assets/Fonts/JetBrainsMono-Regular.ttf#JetBrains Mono" />
+            <Setter Property="FontSize" Value="16" />
             <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Padding" Value="6" />
+        </Style>
+
+        <!-- Button font -->
+        <Style Selector="Button">
+            <Setter Property="FontFamily"
+                Value="avares://SMDB.Avalonia/Assets/Fonts/JetBrainsMono-Regular.ttf#JetBrains Mono" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Padding" Value="8,4" />
+        </Style>
+
+        <!-- ListBox font -->
+        <Style Selector="ListBox">
+            <Setter Property="FontFamily"
+                Value="avares://SMDB.Avalonia/Assets/Fonts/JetBrainsMono-Regular.ttf#JetBrains Mono" />
+            <Setter Property="FontSize" Value="15" />
         </Style>
 
         <Style Selector="TextBox:focus">
-            <Setter Property="Background" Value="White" />
             <Setter Property="BorderBrush" Value="#0078D4" />
-        </Style>
-
-        <Style Selector="TextBox:selection">
-            <Setter Property="Background" Value="#CDE8FF" />
-            <Setter Property="Foreground" Value="Black" />
         </Style>
 
         <Style Selector="ListBoxItem:selected">
@@ -30,9 +44,5 @@
             <Setter Property="Foreground" Value="Black" />
         </Style>
 
-        <Style Selector="DataGridRow:selected">
-            <Setter Property="Background" Value="#CDE8FF" />
-            <Setter Property="Foreground" Value="Black" />
-        </Style>
     </Application.Styles>
 </Application>

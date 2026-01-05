@@ -23,6 +23,7 @@
                     <TextBlock Text="Storage:" FontWeight="Bold" />
                     <ListBox x:Name="TablesList"
                         Height="180"
+                        SelectionChanged="OnTableSelected"
                         Background="White" />
                 </StackPanel>
             </Border>
@@ -52,7 +53,7 @@
                     <TextBlock Text="Enter Query:" FontWeight="Bold" />
                     <TextBox x:Name="QueryBox"
                         AcceptsReturn="True"
-                        Height="120"
+                        Height="320"
                         Background="White" />
 
                     <StackPanel Orientation="Horizontal"
@@ -79,14 +80,13 @@
                     <TextBox x:Name="OutputBox"
                         AcceptsReturn="True"
                         IsReadOnly="True"
-                        Height="260"
+                        Height="170"
                         Background="White" />
                 </StackPanel>
             </Border>
 
             <!-- TABLE INSIGHT -->
             <Border Grid.Row="0" Grid.Column="2"
-                Grid.RowSpan="2"
                 Background="#DADADA"
                 BorderBrush="#B0B0B0"
                 BorderThickness="1"
@@ -94,10 +94,12 @@
                 Padding="5">
                 <StackPanel>
                     <TextBlock Text="Table Insight:" FontWeight="Bold" />
-                    <dg:DataGrid x:Name="TableGrid"
-                        AutoGenerateColumns="True"
-                        Background="White" />
-                </StackPanel>
+                        <TextBox x:Name="TableGrid"
+                            AcceptsReturn="True"
+                            IsReadOnly="True"
+                            Height="360"
+                            Background="White" />
+            </StackPanel>
             </Border>
 
         </Grid>
