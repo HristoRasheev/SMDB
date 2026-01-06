@@ -1,18 +1,18 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:dg="using:Avalonia.Controls"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="SMDB.Avalonia.MainWindow"
-        Background="#F0F0F0"
-        Title="SMDB.Avalonia">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dg="using:Avalonia.Controls"
+    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+    x:Class="SMDB.Avalonia.MainWindow"
+    Background="#096085"
+    Title="SMDB.Avalonia">
 
         <Grid Margin="10"
-            ColumnDefinitions="220,*,300"
+            ColumnDefinitions="1*,2*,1*"
             RowDefinitions="Auto,*">
 
-            <!-- STORAGE -->
+        <!-- storage -->
             <Border Grid.Row="0" Grid.Column="0"
                 Background="#DADADA"
                 BorderBrush="#B0B0B0"
@@ -22,19 +22,20 @@
                 <StackPanel>
                     <TextBlock Text="Storage:" FontWeight="Bold" />
                     <ListBox x:Name="TablesList"
-                        Height="180"
+                        Height="320"
                         SelectionChanged="OnTableSelected"
                         Background="White" />
                 </StackPanel>
             </Border>
 
-            <!-- TABLE INFO -->
+        <!--table info -->
             <Border Grid.Row="1" Grid.Column="0"
                 Background="#DADADA"
                 BorderBrush="#B0B0B0"
                 BorderThickness="1"
                 Margin="5"
-                Padding="5">
+                Padding="5"
+                ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock Text="Table Info:" FontWeight="Bold" />
                     <TextBlock x:Name="TableInfoText"
@@ -42,7 +43,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- ENTER QUERY -->
+        <!-- enter query -->
             <Border Grid.Row="0" Grid.Column="1"
                 Background="#DADADA"
                 BorderBrush="#B0B0B0"
@@ -68,7 +69,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- OUTPUT -->
+        <!-- output -->
             <Border Grid.Row="1" Grid.Column="1"
                 Background="#DADADA"
                 BorderBrush="#B0B0B0"
@@ -85,22 +86,54 @@
                 </StackPanel>
             </Border>
 
-            <!-- TABLE INSIGHT -->
-            <Border Grid.Row="0" Grid.Column="2"
-                Background="#DADADA"
-                BorderBrush="#B0B0B0"
-                BorderThickness="1"
-                Margin="5"
-                Padding="5">
-                <StackPanel>
-                    <TextBlock Text="Table Insight:" FontWeight="Bold" />
-                        <TextBox x:Name="TableGrid"
+        <!-- table insight -->
+        <Border Grid.Row="0" Grid.Column="2"
+            Grid.RowSpan="2"
+            Background="#E3E3E3"
+            BorderBrush="#B0B0B0"
+            BorderThickness="1"
+            Margin="5"
+            Padding="6">
+
+            <StackPanel Spacing="8">
+
+                <!-- title -->
+                <TextBlock Text="Table Insight"
+                    FontWeight="Bold"
+                    FontSize="17" />
+
+                    <TextBox x:Name="TableGrid"
+                    AcceptsReturn="True"
+                    IsReadOnly="True"
+                    Height="310"
+                    Background="White"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto">
+                </TextBox>
+
+                <Border Background="#F6F6F6"
+                    BorderBrush="#C0C0C0"
+                    BorderThickness="1"
+                    Padding="6">
+
+                    <StackPanel Spacing="4">
+
+                        <TextBlock Text="Indexes"
+                            FontWeight="SemiBold"
+                            FontSize="15" />
+
+                        <TextBox x:Name="IndexInfoBox"
                             AcceptsReturn="True"
                             IsReadOnly="True"
-                            Height="360"
-                            Background="White" />
+                            Height="280"
+                            Background="#FFFFFF"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            Text="No indexes defined." />
+
+                    </StackPanel>
+                </Border>
+
             </StackPanel>
-            </Border>
+        </Border>
 
         </Grid>
 </Window>

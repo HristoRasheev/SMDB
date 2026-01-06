@@ -41,7 +41,10 @@ namespace SMDB.Avalonia
         private void OnTableSelected(object? sender, SelectionChangedEventArgs e)
         {
             if (TablesList.SelectedItem is string table)
+            {
                 ShowTable(table);
+                IndexInfoBox.Text = _engine.GetIndexInfo(table);
+            }
         }
 
         private void LoadTables()
@@ -68,32 +71,6 @@ namespace SMDB.Avalonia
                 _engine.Execute($"SELECT * FROM {table}");
 
             TableGrid.Text = selectOutput;
-        }
-
-        private DataTable ParseSelect(string text)
-        {
-            DataTable dt = new DataTable();
-
-            var lines = text.Split('\n',
-                StringSplitOptions.RemoveEmptyEntries);
-
-            if (lines.Length < 2)
-                return dt;
-
-            var headers = lines[0]
-                .Split('|', StringSplitOptions.TrimEntries);
-
-            foreach (var h in headers)
-                dt.Columns.Add(h);
-
-            for (int i = 2; i < lines.Length; i++)
-            {
-                var vals = lines[i]
-                    .Split('|', StringSplitOptions.TrimEntries);
-                dt.Rows.Add(vals);
-            }
-
-            return dt;
         }
     }
 }
