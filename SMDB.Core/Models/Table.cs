@@ -1074,6 +1074,36 @@ namespace SMDB.Core.Models
             Console.WriteLine($"Index '{indexName}' dropped.");
         }
 
+        public string GetIndexesInfo()
+        {
+            string storage = GetStorageDir();
+
+            string[] idxFiles = Directory.GetFiles(
+                storage,
+                $"{Name}_*.idx"
+            );
+
+            if (idxFiles.Length == 0)
+                return "No indexes defined.";
+
+            string result = $"Indexes on table {Name}:\n\n";
+
+            for (int i = 0; i < idxFiles.Length; i++)
+            {
+                using (BinaryReader r = new BinaryReader(File.Open(idxFiles[i], FileMode.Open)))
+                {
+                    string tableName = r.ReadString();
+                    string columnName = r.ReadString();
+                    int count = r.ReadInt32();
+
+                    result += $"• {Path.GetFileNameWithoutExtension(idxFiles[i])}\n";
+                    result += $"  Column: {columnName}\n";
+                    result += $"  Entries: {count}\n\n";
+                }
+            }
+
+            return result;
+        }
         public string CheckIntegrity()
         {
             string tableFile = GetDataPath();
