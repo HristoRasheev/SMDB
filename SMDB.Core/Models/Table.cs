@@ -177,7 +177,6 @@ namespace SMDB.Core.Models
             return s;
         }
 
-
         private void ReadMeta(out int rowCount, out Column[] columns, out int freeCount, out int[] freeSlots, out int checksum)
         {
             string metaFile = GetMetaPath();
@@ -328,7 +327,7 @@ namespace SMDB.Core.Models
 
             using (BinaryWriter writer = new BinaryWriter(File.Open(tableFile, FileMode.CreateNew)))
             {
-                writer.Write(Name); // header
+                writer.Write(Name);
             }
 
             int checksum = CalcDataChecksum(tableFile, GetDataStart());
@@ -521,10 +520,8 @@ namespace SMDB.Core.Models
                 return;
             }
 
-            // ✅ вече има checksum параметър
             ReadMeta(out int rowCount, out Column[] columns, out int freeCount, out int[] freeSlots, out _);
 
-            // collect valid
             int validCount = 0;
             for (int i = 0; i < rowNumbers.Length; i++)
             {
@@ -559,7 +556,6 @@ namespace SMDB.Core.Models
             int rowSize = GetRowSize(columns);
             long dataStart = GetDataStart();
 
-            // header
             for (int i = 0; i < columns.Length; i++)
                 Console.Write(columns[i].Name + "\t");
             Console.WriteLine();
@@ -987,7 +983,7 @@ namespace SMDB.Core.Models
 
             using (BinaryReader r = new BinaryReader(File.Open(tableFile, FileMode.Open, FileAccess.Read)))
             {
-                r.ReadString(); // header
+                r.ReadString();
 
                 for (int row = 1; row <= rowCount; row++)
                 {
@@ -1017,7 +1013,7 @@ namespace SMDB.Core.Models
                 }
             }
 
-            // sort by key (bubble)
+            // bubble srt
             for (int i = 0; i < keys.Count - 1; i++)
                 for (int j = i + 1; j < keys.Count; j++)
                     if (keys[j] < keys[i])

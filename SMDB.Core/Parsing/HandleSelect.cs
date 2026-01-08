@@ -32,7 +32,6 @@ namespace SMDB.Core.Parsing
                 if (word == "*")
                 {
                     columns.Add("*");
-                    // очакваме FROM
                     (pos, string next) = ReadWord(pos, query);
                     if (next.ToUpperInvariant() != "FROM")
                     {
@@ -167,7 +166,7 @@ namespace SMDB.Core.Parsing
                 (pos, string dir) = ReadWord(pos, query);
                 if (dir.ToUpperInvariant() == "DESC") orderAsc = false;
                 else if (dir.ToUpperInvariant() == "ASC") orderAsc = true;
-                else pos = save3; // няма посока -> default ASC
+                else pos = save3; // default ASC
 
                 hasOrder = true;
             }

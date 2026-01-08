@@ -27,9 +27,6 @@ namespace SMDB.Core.Parsing
             (pos, string nextWord) = ReadWord(pos, query);
             string upper = nextWord;
 
-            // -------------------------
-            // DELETE FROM T ROW 1,2,3
-            // -------------------------
             if (upper == "ROW")
             {
                 List<int> rowNumbers = new List<int>();
@@ -77,9 +74,6 @@ namespace SMDB.Core.Parsing
                 return;
             }
 
-            // -------------------------
-            // DELETE FROM T WHERE ...
-            // -------------------------
             if (upper == "WHERE")
             {
                 SimpleCond[] conds = new SimpleCond[64];
@@ -104,7 +98,7 @@ namespace SMDB.Core.Parsing
                         return;
                     }
 
-                    // Operator
+                    // Op
                     pos = SkipSpaces(pos, query);
                     (pos, string op) = ReadOperator(pos, query);
                     if (op == "")
@@ -113,7 +107,7 @@ namespace SMDB.Core.Parsing
                         return;
                     }
 
-                    // Value (като текст)
+                    // Value
                     (pos, string valStr) = ReadValueInRange(pos, query.Length, query);
                     if (valStr == "")
                     {
@@ -121,7 +115,6 @@ namespace SMDB.Core.Parsing
                         return;
                     }
 
-                    // записваме текущото условие
                     conds[condCount].Col = colName;
                     conds[condCount].Op = op;
                     conds[condCount].ValStr = valStr;
@@ -139,7 +132,7 @@ namespace SMDB.Core.Parsing
                         continue;
                     }
 
-                    pos = saveNext; // няма повече условия
+                    pos = saveNext; 
                     break;
                 }
 
@@ -162,7 +155,6 @@ namespace SMDB.Core.Parsing
                 return;
             }
 
-            // ако не е ROW и не е WHERE
             pos = save;
             Console.WriteLine("Supported: DELETE FROM <Table> ROW ...  OR  DELETE FROM <Table> WHERE ...");
         }

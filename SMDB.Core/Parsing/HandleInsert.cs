@@ -53,13 +53,12 @@ namespace SMDB.Core.Parsing
                 if (p < closeCols && query[p] == ',')
                 {
                     p++;
-                    // Прескачаме интервали след запетая
                     while (p < closeCols && char.IsWhiteSpace(query[p]))
                         p++;
                 }
                 else
                 {
-                    break; // няма повече колони
+                    break; 
                 }
             }
 
@@ -107,7 +106,7 @@ namespace SMDB.Core.Parsing
                 }
                 else
                 {
-                    break; // няма повече стойности
+                    break;
                 }
             }
 

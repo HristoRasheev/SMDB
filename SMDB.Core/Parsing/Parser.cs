@@ -71,7 +71,6 @@ namespace SMDB.Core.Parsing
 
             char c = text[pos];
 
-            // двусимволни
             if (pos + 1 < text.Length)
             {
                 char n = text[pos + 1];
@@ -80,7 +79,6 @@ namespace SMDB.Core.Parsing
                 if (c == '>' && n == '=') return (pos + 2, ">=");
             }
 
-            // едносимволни
             if (c == '=' || c == '<' || c == '>') return (pos + 1, c.ToString());
 
             return (pos, "");
@@ -118,16 +116,14 @@ namespace SMDB.Core.Parsing
         //Toва е вместо Substring
         private (int pos, string word) ReadWordInRange(int pos, int end, string text)
         {
-            // Прескачаме празни места
             while (pos < end && char.IsWhiteSpace(text[pos]))
                 pos++;
 
             if (pos >= end)
-                return (pos, ""); // няма дума
+                return (pos, ""); 
 
             string word = "";
 
-            // Събираме символите до интервал, запетая или края
             while (pos < end &&
                     !char.IsWhiteSpace(text[pos]) &&
                     text[pos] != ',' &&
@@ -141,25 +137,23 @@ namespace SMDB.Core.Parsing
                 pos++;
             }
 
-            // НЕ пипаме запетаята тук – оставяме я да я види външният код
             return (pos, word);
         }
 
         private (int pos, string value) ReadValueInRange(int pos, int end, string text)
         {
-            // Прескачаме празни места
             while (pos < end && char.IsWhiteSpace(text[pos]))
                 pos++;
 
             if (pos >= end)
-                return (pos, ""); // няма стойност
+                return (pos, ""); 
 
             char c = text[pos];
 
             if (c == '\'' || c == '\"')
             {
                 char quote = c;
-                pos++; // прескачаме отварящата кавичка
+                pos++;
                 string val = "";
 
                 while (pos < end && text[pos] != quote)
