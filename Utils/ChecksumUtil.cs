@@ -23,17 +23,12 @@ namespace SMDB.Utils
 
             return sum;
         }
-
-        // Гарантира, че файлът завършва с 4 байта checksum (int32).
-        // Ако файлът е нов или няма checksum -> добавя.
-        // Ако вече има -> презаписва последните 4 байта.
         public static void WriteOrUpdateChecksum(string path)
         {
             using FileStream fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
 
             long len = fs.Length;
 
-            // Няма checksum поле (файл < 4 байта) -> добавяме checksum накрая
             if (len < 4)
             {
                 int sum = ComputeSumChecksum(fs, len);
@@ -42,7 +37,6 @@ namespace SMDB.Utils
                 return;
             }
 
-            // Приемаме, че последните 4 байта са checksum поле
             long dataLen = len - 4;
 
             int newSum = ComputeSumChecksum(fs, dataLen);
