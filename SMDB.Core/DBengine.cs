@@ -3,31 +3,39 @@ using System.IO;
 using SMDB.Core.Models;
 using SMDB.Core.Parsing;
 
-namespace SMDB.Core;
-
-public class DatabaseEngine
+namespace SMDB.Core
 {
-    public string Execute(string query)
+    public class DatabaseEngine
     {
-        if (string.IsNullOrWhiteSpace(query))
-            return "Empty query.";
-
-        try
+        public string Execute(string query)
         {
-            Parser parser = new Parser();
+            if (string.IsNullOrWhiteSpace(query))
+                return "Empty query.";
 
-            using StringWriter sw = new StringWriter();
-            TextWriter oldOut = Console.Out;
-            Console.SetOut(sw);
+            try
+            {
+                Parser parser = new Parser();
+                using StringWriter sw = new StringWriter();
+                TextWriter oldOut = Console.Out;
+                Console.SetOut(sw);
 
-            parser.ExecuteCommand(query);
+                parser.ExecuteCommand(query);
 
-            Console.SetOut(oldOut);
-            return sw.ToString();
+                Console.SetOut(oldOut);
+                return sw.ToString();
+            }
+            catch (Exception ex)
+            {
+                return $"ERROR: {ex.Message}";
+            }
         }
-        catch (Exception ex)
+
+        public string GetIndexInfo(string tableName)
         {
-            return $"ERROR: {ex.Message}";
+            if (string.IsNullOrWhiteSpace(tableName))
+                return "";
+
+            return new Table(tableName).GetIndexesInfo();
         }
     }
 }
