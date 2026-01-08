@@ -1122,7 +1122,7 @@ namespace SMDB.Core.Models
             if (realChecksum != storedChecksum)
                 return $"CORRUPT: checksum mismatch (meta={storedChecksum}, real={realChecksum})";
 
-            return "OK";
+            return "Integrity check passed.";
         }
 
     }

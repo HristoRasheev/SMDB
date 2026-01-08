@@ -72,5 +72,16 @@ namespace SMDB.Avalonia
 
             TableGrid.Text = selectOutput;
         }
+
+        private void CheckIntegrity(object? sender, RoutedEventArgs e)
+        {
+            if (TablesList.SelectedItem is not string table)
+            {
+                OutputBox.Text = "No table selected.";
+                return;
+            }
+            var result = _engine.Execute($"CHECK {table}");
+            OutputBox.Text = result;
+        }
     }
 }

@@ -3,10 +3,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dg="using:Avalonia.Controls"
-    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" CanResize="False"
     x:Class="SMDB.Avalonia.MainWindow"
     Background="#096085"
-    Title="SMDB.Avalonia">
+    Title="SMDB">
 
         <Grid Margin="10"
             ColumnDefinitions="1*,2*,1*"
@@ -34,12 +34,30 @@
                 BorderBrush="#B0B0B0"
                 BorderThickness="1"
                 Margin="5"
-                Padding="5"
-                ScrollViewer.VerticalScrollBarVisibility="Auto">
+                Padding="5">
+
                 <StackPanel>
-                    <TextBlock Text="Table Info:" FontWeight="Bold" />
-                    <TextBlock x:Name="TableInfoText"
-                        Margin="0,8,0,0" />
+                    <DockPanel LastChildFill="False">
+                        <TextBlock Text="Table Info:"
+                            FontWeight="Bold"
+                            DockPanel.Dock="Left" />
+
+                        <Button Content="CHECK INTEGRITY"
+                            DockPanel.Dock="Right"
+                            Padding="10,4"
+                            FontSize="16"
+                            Click="CheckIntegrity" />
+                    </DockPanel>
+
+                    <!-- Info text -->
+                    <ScrollViewer Height="260"
+                        VerticalScrollBarVisibility="Auto">
+                        <TextBox x:Name="TableInfoText"
+                            AcceptsReturn="True"
+                            IsReadOnly="True"
+                            Background="White"
+                            TextWrapping="Wrap" />
+                    </ScrollViewer>
                 </StackPanel>
             </Border>
 
@@ -81,7 +99,7 @@
                     <TextBox x:Name="OutputBox"
                         AcceptsReturn="True"
                         IsReadOnly="True"
-                        Height="170"
+                        Height="267"
                         Background="White" />
                 </StackPanel>
             </Border>
@@ -124,7 +142,7 @@
                         <TextBox x:Name="IndexInfoBox"
                             AcceptsReturn="True"
                             IsReadOnly="True"
-                            Height="280"
+                            Height="310"
                             Background="#FFFFFF"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             Text="No indexes defined." />
