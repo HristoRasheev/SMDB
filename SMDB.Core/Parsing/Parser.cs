@@ -80,17 +80,16 @@ namespace SMDB.Core.Parsing
             }
 
             if (c == '=' || c == '<' || c == '>') return (pos + 1, c.ToString());
-
             return (pos, "");
         }
 
-        //Тези са вместо split или trim
+        //split или trim
         private (int pos, string word) ReadWord(int pos, string query)
         {
             return ReadWordInRange(pos, query.Length, query);
         }
 
-        //Тези са вместо IndexOf
+        //IndexOf
         private int FindForward(int pos, string text, char target)
         {
             while (pos < text.Length)
@@ -113,7 +112,7 @@ namespace SMDB.Core.Parsing
             return -1;
         }
 
-        //Toва е вместо Substring
+        // Substring
         private (int pos, string word) ReadWordInRange(int pos, int end, string text)
         {
             while (pos < end && char.IsWhiteSpace(text[pos]))
@@ -140,13 +139,31 @@ namespace SMDB.Core.Parsing
             return (pos, word);
         }
 
+        private string ToUpperInvariant(string s)
+        {
+            if (s == null) return "";
+
+            char[] result = new char[s.Length];
+
+            for (int i = 0; i < s.Length; i++)
+            {
+                char c = s[i];
+                if (c >= 'a' && c <= 'z')
+                    result[i] = (char)(c - 32);
+                else
+                    result[i] = c;
+            }
+
+            return new string(result);
+        }
+
         private (int pos, string value) ReadValueInRange(int pos, int end, string text)
         {
             while (pos < end && char.IsWhiteSpace(text[pos]))
                 pos++;
 
             if (pos >= end)
-                return (pos, ""); 
+                return (pos, "");
 
             char c = text[pos];
 
@@ -178,6 +195,5 @@ namespace SMDB.Core.Parsing
                 return (pos, val);
             }
         }
-
     }
 }

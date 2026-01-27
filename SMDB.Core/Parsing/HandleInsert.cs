@@ -9,7 +9,7 @@ namespace SMDB.Core.Parsing
         private void HandleInsert(int pos, string query)
         {
             (pos, string sw) = ReadWord(pos, query);
-            string secondWord = sw.ToUpperInvariant();
+            string secondWord = ToUpperInvariant(sw);
             if (secondWord != "INTO")
             {
                 Console.WriteLine("Invalid command!");
@@ -64,7 +64,7 @@ namespace SMDB.Core.Parsing
 
             pos = closeCols + 1;
             (pos, string tw) = ReadWord(pos, query);
-            string thirdWord = tw.ToUpperInvariant();
+            string thirdWord = ToUpperInvariant(tw);
             if (thirdWord != "VALUES")
             {
                 Console.WriteLine("Expected VALUES keyword.");

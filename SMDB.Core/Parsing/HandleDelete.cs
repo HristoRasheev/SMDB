@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using SMDB.Core.Models;
 
 namespace SMDB.Core.Parsing
@@ -76,8 +77,8 @@ namespace SMDB.Core.Parsing
 
             if (upper == "WHERE")
             {
-                SimpleCond[] conds = new SimpleCond[64];
-                string[] links = new string[64];
+                List<Cond> conds = new List<Cond>();
+                List<string> links = new List<string>();
                 int condCount = 0;
 
                 while (true)
@@ -115,13 +116,15 @@ namespace SMDB.Core.Parsing
                         return;
                     }
 
-                    conds[condCount].Col = colName;
-                    conds[condCount].Op = op;
-                    conds[condCount].ValStr = valStr;
-                    conds[condCount].Not = notFlag;
-                    condCount++; 
+                    conds.Add(new Cond
+                    {
+                        Col = colName,
+                        Op = op,
+                        ValStr = valStr,
+                        Not = notFlag,
+                    });
 
-                    // next: AND / OR / end
+                    //AND / OR / end
                     int saveNext = pos;
                     (pos, string next) = ReadWord(pos, query);
                     string j = next;
@@ -136,14 +139,14 @@ namespace SMDB.Core.Parsing
                     break;
                 }
 
-                if (condCount == 0)
+                if (conds.Count == 0)
                 {
                     Console.WriteLine("WHERE exists but no condition is given.");
                     return;
                 }
 
                 var table = new Table(tableName);
-                int[] rows = table.DeleteRowsWhere(conds, links, condCount);
+                int[] rows = table.DeleteRowsWhere(conds.ToArray(), links.ToArray(), conds.Count);
 
                 if (rows.Length == 0)
                 {

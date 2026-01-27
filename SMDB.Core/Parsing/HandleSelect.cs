@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using SMDB.Core.Models;
 
 namespace SMDB.Core.Parsing
@@ -15,8 +16,8 @@ namespace SMDB.Core.Parsing
             List<string> columns = new List<string>();
 
             int save0 = pos;
-            (pos, string maybeDistinct) = ReadWord(pos, query);
-            if (maybeDistinct == "DISTINCT")
+            (pos, string dist) = ReadWord(pos, query);
+            if (dist == "DISTINCT")
             {
                 distinct = true;
             }
@@ -33,7 +34,7 @@ namespace SMDB.Core.Parsing
                 {
                     columns.Add("*");
                     (pos, string next) = ReadWord(pos, query);
-                    if (next.ToUpperInvariant() != "FROM")
+                    if (ToUpperInvariant(next) != "FROM")
                     {
                         Console.WriteLine("Expected FROM after *");
                         return;
@@ -46,7 +47,7 @@ namespace SMDB.Core.Parsing
                     return;
                 }
 
-                if (word.ToUpperInvariant() == "FROM")
+                if (ToUpperInvariant(word) == "FROM")
                     break;
 
                 columns.Add(word);
@@ -74,24 +75,23 @@ namespace SMDB.Core.Parsing
                 return;
             }
 
-            SimpleCond[] conds = new SimpleCond[64];
-            string[] links = new string[64];
-            int condCount = 0;
-
+            List<Cond> conds = new List<Cond>();
+            List<string> links = new List<string>();
             int save = pos;
+
             (pos, string w) = ReadWord(pos, query);
 
-            if (w.ToUpperInvariant() == "WHERE")
+            if (ToUpperInvariant(w) == "WHERE")
             {
                 while (true)
                 {
                     bool notFlag = false;
                     int saveNot = pos;
                     (pos, string maybeNot) = ReadWord(pos, query);
-                    if (maybeNot.ToUpperInvariant() == "NOT") notFlag = true;
+                    if (ToUpperInvariant(maybeNot) == "NOT") notFlag = true;
                     else pos = saveNot;
 
-                    // Column
+                    // Col
                     (pos, string colName) = ReadWord(pos, query);
                     if (colName == "")
                     {
@@ -99,7 +99,7 @@ namespace SMDB.Core.Parsing
                         return;
                     }
 
-                    // Operator
+                    // Op
                     pos = SkipSpaces(pos, query);
                     (pos, string op) = ReadOperator(pos, query);
                     if (op == "")
@@ -108,23 +108,25 @@ namespace SMDB.Core.Parsing
                         return;
                     }
 
-                    // Value
+                    // Val
                     (pos, string valStr) = ReadValueInRange(pos, query.Length, query);
 
-                    conds[condCount].Col = colName;
-                    conds[condCount].Op = op;
-                    conds[condCount].ValStr = valStr;
-                    conds[condCount].Not = notFlag;
-                    condCount++;
+                    conds.Add(new Cond
+                    {
+                        Col = colName,
+                        Op = op,
+                        ValStr = valStr,
+                        Not = notFlag
+                    });
 
                     // AND / OR / ORDER / end
                     int saveNext = pos;
                     (pos, string next) = ReadWord(pos, query);
-                    string up = next.ToUpperInvariant();
+                    string up = ToUpperInvariant(next);
 
                     if (up == "AND" || up == "OR")
                     {
-                        links[condCount - 1] = up; 
+                        links.Add(up);
                         continue;
                     }
 
@@ -133,7 +135,6 @@ namespace SMDB.Core.Parsing
                         pos = saveNext; 
                         break;
                     }
-
                     pos = saveNext;
                     break;
                 }
@@ -145,10 +146,10 @@ namespace SMDB.Core.Parsing
 
             int save2 = pos;
             (pos, string maybeOrder) = ReadWord(pos, query);
-            if (maybeOrder.ToUpperInvariant() == "ORDER")
+            if (ToUpperInvariant(maybeOrder) == "ORDER")
             {
                 (pos, string byWord) = ReadWord(pos, query);
-                if (byWord.ToUpperInvariant() != "BY")
+                if (ToUpperInvariant(byWord) != "BY")
                 {
                     Console.WriteLine("Expected BY after ORDER.");
                     return;
@@ -164,8 +165,8 @@ namespace SMDB.Core.Parsing
                 // ASC/DESC
                 int save3 = pos;
                 (pos, string dir) = ReadWord(pos, query);
-                if (dir.ToUpperInvariant() == "DESC") orderAsc = false;
-                else if (dir.ToUpperInvariant() == "ASC") orderAsc = true;
+                if (ToUpperInvariant(dir) == "DESC") orderAsc = false;
+                else if (ToUpperInvariant(dir) == "ASC") orderAsc = true;
                 else pos = save3; // default ASC
 
                 hasOrder = true;
@@ -180,8 +181,7 @@ namespace SMDB.Core.Parsing
                 cols[i] = columns[i];
 
             var table = new Table(tableName);
-            table.Select(cols, conds, links, condCount, distinct, hasOrder, orderCol, orderAsc);
-
+            table.Select(cols, conds.ToArray(), links.ToArray(), conds.Count, distinct, hasOrder, orderCol, orderAsc);
         }
     }
 }

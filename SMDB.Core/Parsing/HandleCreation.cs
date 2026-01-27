@@ -42,12 +42,12 @@ namespace SMDB.Core.Parsing
 
             while (p < endCols)
             {
-                // Име на колоната
+                // Name
                 (p, string colName) = ReadWordInRange(p, endCols, query);
                 if (colName == "")
                     break;
 
-                // Тип на колоната
+                // Type
                 (p, string rawType) = ReadWordInRange(p, endCols, query);
                 if (rawType == "")
                 {
@@ -93,9 +93,9 @@ namespace SMDB.Core.Parsing
                         return;
                     }
 
-                    t++; // след ')'
+                    t++;
                     size = m;
-                    p = t; // местим основната позиция след ')'
+                    p = t;
                 }
 
                 string? defaultValue = null;

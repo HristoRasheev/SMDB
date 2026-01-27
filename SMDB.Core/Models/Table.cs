@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 
 namespace SMDB.Core.Models
 {
@@ -12,7 +13,7 @@ namespace SMDB.Core.Models
         public string DefaultValue;
     }
 
-    public struct SimpleCond
+    public struct Cond
     {
         public string Col;
         public string Op;
@@ -46,19 +47,10 @@ namespace SMDB.Core.Models
             return Path.Combine(GetStorageDir(), Name + ".tbl");
         }
 
-        private bool StringsAreEqual(string a, string b)
-        {
-            if (a == null || b == null) return false;
-            if (a.Length != b.Length) return false;
-            for (int i = 0; i < a.Length; i++)
-                if (a[i] != b[i]) return false;
-            return true;
-        }
-
         private int FindColumnIndex(Column[] columns, string name)
         {
             for (int i = 0; i < columns.Length; i++)
-                if (StringsAreEqual(columns[i].Name, name))
+                if (columns[i].Name == name)
                     return i;
             return -1;
         }
@@ -66,7 +58,7 @@ namespace SMDB.Core.Models
         private int FindColumnIndex(string[] insertColumns, string target)
         {
             for (int i = 0; i < insertColumns.Length; i++)
-                if (StringsAreEqual(insertColumns[i], target))
+                if (insertColumns[i] == target)
                     return i;
             return -1;
         }
@@ -100,14 +92,6 @@ namespace SMDB.Core.Models
                 if (b != 0) buf[len++] = (char)b;
             }
             return new string(buf, 0, len);
-        }
-
-        private string Unquote(string s)
-        {
-            if (s == null) return "";
-            if (s.Length >= 2 && s[0] == '"' && s[s.Length - 1] == '"')
-                return s.Substring(1, s.Length - 2);
-            return s;
         }
 
         private int ParseIntOrError(string s)
@@ -177,7 +161,8 @@ namespace SMDB.Core.Models
             return s;
         }
 
-        private void ReadMeta(out int rowCount, out Column[] columns, out int freeCount, out int[] freeSlots, out int checksum)
+        private void ReadMeta(out int rowCount, out Column[] columns,
+                                out int freeCount, out int[] freeSlots, out int checksum)
         {
             string metaFile = GetMetaPath();
             if (!File.Exists(metaFile)) throw new Exception("Meta file missing.");
@@ -246,15 +231,14 @@ namespace SMDB.Core.Models
             string tableFile = GetDataPath();
             using (BinaryReader r = new BinaryReader(File.Open(tableFile, FileMode.Open, FileAccess.Read)))
             {
-                r.ReadString();
+                r.ReadString(); // header
                 return r.BaseStream.Position;
             }
         }
 
-        private bool EvalWhere(SimpleCond[] conds, string[] links, int condCount, int[] rowNums, Column[] columns)
+        private bool EvalWhere(Cond[] conds, string[] links, int condCount, int[] rowNums, Column[] columns)
         {
             if (condCount == 0) return true;
-
             bool result = false;
             bool hasResult = false;
 
@@ -264,7 +248,7 @@ namespace SMDB.Core.Models
                 if (colIndex == -1) return false;
 
                 string t = columns[colIndex].Type;
-                if (t != "INT" && t != "DATE") return false; // WHERE само за числа/дата
+                if (t != "INT" && t != "DATE") return false; // WHERE int/date
 
                 int right;
                 if (t == "INT")
@@ -298,7 +282,6 @@ namespace SMDB.Core.Models
                     else result = result || ok;
                 }
             }
-
             return result;
         }
 
@@ -325,11 +308,13 @@ namespace SMDB.Core.Models
                 if (columns[i].DefaultValue == null) columns[i].DefaultValue = "NULL";
             }
 
+            //tbl
             using (BinaryWriter writer = new BinaryWriter(File.Open(tableFile, FileMode.CreateNew)))
             {
                 writer.Write(Name);
             }
 
+            //meta
             int checksum = CalcDataChecksum(tableFile, GetDataStart());
             WriteMeta(0, columns, 0, new int[0], checksum);
 
@@ -346,7 +331,13 @@ namespace SMDB.Core.Models
             if (File.Exists(tableFile)) { File.Delete(tableFile); deleted = true; }
             if (File.Exists(metaFile)) { File.Delete(metaFile); deleted = true; }
 
-            Console.WriteLine(deleted ? $"Table '{Name}' was deleted successfully!" : $"Table '{Name}' doesn't exist!");
+            if (deleted == false)
+            {
+                Console.WriteLine($"Table '{Name}' doesn't exist!");
+                return;
+            }
+
+            Console.WriteLine($"Table '{Name}' was deleted successfully!");
         }
 
         public void PrintInfo()
@@ -360,11 +351,12 @@ namespace SMDB.Core.Models
                 return;
             }
 
-            ReadMeta(out int rowCount, out Column[] columns, out _, out _, out _);
+            ReadMeta(out int rowCount, out Column[] columns, out int freeCount, out _, out _);
 
             long tableSize = new FileInfo(tableFile).Length;
             long metaSize = new FileInfo(metaFile).Length;
 
+            
             Console.WriteLine($"Table: {Name}");
             Console.WriteLine();
             Console.WriteLine("Columns:");
@@ -375,7 +367,9 @@ namespace SMDB.Core.Models
                 else Console.WriteLine($"  - {columns[i].Name} : {t}");
             }
             Console.WriteLine();
-            Console.WriteLine($"Rows: {rowCount}");
+
+            int activeRows = rowCount - freeCount;
+            Console.WriteLine($"Rows: {activeRows}");
             Console.WriteLine($"Data file size (.tbl):  {tableSize} bytes");
             Console.WriteLine($"Meta file size (.meta): {metaSize} bytes");
             Console.WriteLine($"Total size:             {tableSize + metaSize} bytes");
@@ -405,12 +399,11 @@ namespace SMDB.Core.Models
             for (int i = 0; i < columns.Length; i++)
             {
                 int idx = FindColumnIndex(insertColumns, columns[i].Name);
-
                 if (idx != -1) finalValues[i] = values[idx];
                 else
                 {
                     string def = columns[i].DefaultValue ?? "NULL";
-                    if (!StringsAreEqual(def, "NULL")) finalValues[i] = def;
+                    if (def == "") finalValues[i] = def;
                     else
                     {
                         Console.WriteLine($"Missing value for column '{columns[i].Name}' and no default is defined.");
@@ -419,8 +412,8 @@ namespace SMDB.Core.Models
                 }
             }
 
-            int[] intVals = new int[columns.Length];       // for INT/DATE
-            string[] strVals = new string[columns.Length]; // for STRING
+            int[] intVals = new int[columns.Length];       // INT/DATE
+            string[] strVals = new string[columns.Length]; // STRING
 
             for (int i = 0; i < columns.Length; i++)
             {
@@ -449,7 +442,7 @@ namespace SMDB.Core.Models
                 }
                 else if (t == "STRING")
                 {
-                    string s = Unquote(v);
+                    string s = v;
                     if (columns[i].Size <= 0)
                     {
                         Console.WriteLine($"STRING size missing for column '{columns[i].Name}'.");
@@ -647,7 +640,10 @@ namespace SMDB.Core.Models
 
             int newFreeCount = freeList.Count;
             int[] newFreeSlots = new int[newFreeCount];
-            for (int i = 0; i < newFreeCount; i++) newFreeSlots[i] = freeList[i];
+            for (int i = 0; i < newFreeCount; i++)
+            {
+                newFreeSlots[i] = freeList[i];
+            }
 
             int checksum = CalcDataChecksum(tableFile, GetDataStart());
             WriteMeta(rowCount, columns, newFreeCount, newFreeSlots, checksum);
@@ -655,7 +651,7 @@ namespace SMDB.Core.Models
             Console.WriteLine($"{toDelete.Count} row(s) deleted.");
         }
 
-        public int[] DeleteRowsWhere(SimpleCond[] conds, string[] links, int condCount)
+        public int[] DeleteRowsWhere(Cond[] conds, string[] links, int condCount)
         {
             string tableFile = GetDataPath();
             string metaFile = GetMetaPath();
@@ -673,7 +669,6 @@ namespace SMDB.Core.Models
             using (BinaryReader r = new BinaryReader(File.Open(tableFile, FileMode.Open, FileAccess.Read)))
             {
                 r.ReadString();
-
                 for (int row = 1; row <= rowCount; row++)
                 {
                     if (IsDeletedRow(row, freeSlots, freeCount))
@@ -740,7 +735,7 @@ namespace SMDB.Core.Models
         }
         public void Select(
             string[] selectedCols,
-            SimpleCond[] conds, string[] links, int condCount,
+            Cond[] conds, string[] links, int condCount,
             bool distinct, bool hasOrder, string orderCol, bool orderAsc)
         {
 
@@ -754,9 +749,9 @@ namespace SMDB.Core.Models
             }
 
             ReadMeta(out int rowCount, out Column[] columns,
-         out int freeCount, out int[] freeSlots, out _);
+                        out int freeCount, out int[] freeSlots, out _);
 
-            //при наличие на индекс
+            //idx
             if (condCount == 1 &&
                 conds[0].Op == "=" &&
                 !conds[0].Not)
@@ -766,17 +761,14 @@ namespace SMDB.Core.Models
                     (columns[colIdx].Type == "INT" ||
                      columns[colIdx].Type == "DATE"))
                 {
-                    string idxFile = Path.Combine(
-                        GetStorageDir(),
-                        $"{Name}_{conds[0].Col}.idx"
-                    );
+                    string idxFile = Path.Combine(GetStorageDir(),$"{Name}_{conds[0].Col}.idx");
 
                     if (File.Exists(idxFile))
                     {
-                        int value;
+                        int value = 0;
                         if (columns[colIdx].Type == "INT")
                             value = ParseIntOrError(conds[0].ValStr);
-                        else // DATE
+                        else if (columns[colIdx].Type == "DATE")
                             value = ParseDateToInt(conds[0].ValStr);
 
                         ReadIndex(idxFile, out int[] keys, out int[] rows);
@@ -822,12 +814,11 @@ namespace SMDB.Core.Models
                 string ot = columns[orderColIndex].Type;
                 if (ot != "INT" && ot != "DATE")
                 {
-                    Console.WriteLine("ORDER BY is supported only for INT/DATE for now.");
+                    Console.WriteLine("ORDER BY is supported only for INT/DATE.");
                     return;
                 }
             }
 
-            // header
             for (int i = 0; i < selectedCols.Length; i++)
                 Console.Write(selectedCols[i] + "\t");
             Console.WriteLine();
@@ -906,7 +897,7 @@ namespace SMDB.Core.Models
                         bool same = true;
                         for (int k = 0; k < outRows[i].Length; k++)
                         {
-                            if (!StringsAreEqual(outRows[i][k], uniq[j][k]))
+                            if (outRows[i][k] != uniq[j][k])
                             {
                                 same = false;
                                 break;
@@ -984,7 +975,6 @@ namespace SMDB.Core.Models
             using (BinaryReader r = new BinaryReader(File.Open(tableFile, FileMode.Open, FileAccess.Read)))
             {
                 r.ReadString();
-
                 for (int row = 1; row <= rowCount; row++)
                 {
                     if (IsDeletedRow(row, freeSlots, freeCount))
@@ -1013,7 +1003,7 @@ namespace SMDB.Core.Models
                 }
             }
 
-            // bubble srt
+            //srt
             for (int i = 0; i < keys.Count - 1; i++)
                 for (int j = i + 1; j < keys.Count; j++)
                     if (keys[j] < keys[i])
@@ -1040,16 +1030,13 @@ namespace SMDB.Core.Models
         private int CalcDataChecksum(string path, long startOffset)
         {
             int sum = 0;
-
             using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
                 fs.Seek(startOffset, SeekOrigin.Begin);
-
                 int b;
                 while ((b = fs.ReadByte()) != -1)
                     sum += b;
             }
-
             return sum;
         }
 
@@ -1111,7 +1098,6 @@ namespace SMDB.Core.Models
             ReadMeta(out int rowCount, out Column[] columns, out int freeCount, out int[] freeSlots, out int storedChecksum);
 
             int realChecksum = CalcDataChecksum(tableFile, GetDataStart());
-
             if (storedChecksum == 0)
                 return "OK (no checksum stored yet).";
 
@@ -1120,6 +1106,5 @@ namespace SMDB.Core.Models
 
             return "Integrity check passed.";
         }
-
     }
 }
